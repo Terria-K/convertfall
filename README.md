@@ -15,7 +15,7 @@ convertfall.exe texture --input "path/to/xml" --output "path/for/json"
 ```
 To use the `.json` file, you need to go to this website and use the app (or download the app if you want):
 https://free-tex-packer.com/app/
-Click on the "Split Sheet" button and put a `.png` texture on the Texture form and `.json` to Data File form and click Split. (WARNING: For user who download the app, this will split a textures without an archive file. Please put it in an empty directory)
+Click on the "Split Sheet" button and put a `.png` texture on the Texture form and `.json` to Data File form and click Split. (WARNING: For user who download the app, this will split a textures without an archive. Please put it in an empty directory)
 
 Congratulations! You may now use and extend the atlases, and export it again to `.xml` file if you are done. (Some work needed to be done of course, by replacing the text to be able to make it valid Towerfall `.xml` file)
 
