@@ -2,7 +2,7 @@
 Convert Fall is a conversion for Towerfall including Texture Atlas `.xml` to be converted as `.json` to be used for texture split in Texture Packer
 and tower workshop(work in progress) to convert into a quest `.oel` file.
 
-#WARNING: THIS APPLICATION IS NOT TESTED TO BE USED YET. USE AT YOUR OWN RISK, BACKUP FIRST!
+## WARNING: THIS APPLICATION IS NOT TESTED TO BE USED YET. USE AT YOUR OWN RISK, BACKUP FIRST!
 
 # How to Use?
 With the convertfall executable, you can use a command with it using the terminal or cmd. Use `-help` to see any available command.
