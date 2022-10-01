@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use converter::{towerconverter::TowerConverter, Converter, xmltopackerjson::XmlToPackerJson};
+use converter::{towerconverter::TowerConverter, Converter, xmltopackerjson::XmlToPackerJson, packerjsontoxml::PackerJsonToXML};
 use thiserror::Error;
 use clap::{Command, Arg, ArgMatches};
 mod converter;
@@ -21,10 +21,17 @@ fn main() -> anyhow::Result<()> {
             let output_path = get_path("output", sub_matches)?;
             convert(TowerConverter::new(path, output_path))?;
         }
-        Some(("texture", sub_matches)) => {
+        Some(("texture-xml-json", sub_matches)) => {
             let path = get_path("xml", sub_matches)?;
-            let output_path = get_path("output", sub_matches)?;
+            let output_path = get_path("json", sub_matches)?;
             convert(XmlToPackerJson::new(path, output_path))?;
+        }
+        Some(("texture-json-xml", sub_matches)) => {
+            let path = get_path("json", sub_matches)?;
+            let output_path = get_path("xml", sub_matches)?;
+            let excess_length = get_path_or_none("root", &matches)
+                .map(|x| x.to_str().unwrap_or("").len());
+            convert(PackerJsonToXML::new(path, output_path, excess_length))?;
         }
         _ => {
             Err(CommandError::CommandNotFound)?
@@ -35,6 +42,14 @@ fn main() -> anyhow::Result<()> {
 
 fn convert<T: Converter>(converter: T) -> anyhow::Result<()> {
     converter.start()
+}
+
+fn get_path_or_none(id: &str, matches: &ArgMatches) 
+    -> Option<PathBuf> {
+    match matches.try_get_one(id) {
+        Ok(x) => x.map(|x: &PathBuf| x.to_owned()),
+        Err(_) => None
+    }
 }
 
 fn get_path(id: &str, matches: &ArgMatches) -> anyhow::Result<PathBuf, CommandError> {
@@ -67,7 +82,7 @@ fn cli() -> Command {
                      .help("Specify an output to a directory to generate .oel(s) file"))
         )
         .subcommand(
-            Command::new("texture")
+            Command::new("texture-xml-json")
                 .about("Specify a xml atlas file and an output directory path.")
                 .arg(Arg::new("xml")
                      .short('i')
@@ -76,12 +91,37 @@ fn cli() -> Command {
                      .required(true)
                      .num_args(1)
                      .help("Specify an input of a xml path"))
-                .arg(Arg::new("output")
+                .arg(Arg::new("json")
                      .short('o')
                      .long("output")
                      .value_parser(clap::value_parser!(PathBuf))
                      .required(true)
                      .num_args(1)
-                     .help("Specify an output of an directory to generate .json file"))
+                     .help("Specify an output of a directory to generate .json file"))
+        )
+        .subcommand(
+            Command::new("texture-json-xml")
+                .about("Specify a json packer file and an output directory path.")
+                .arg(Arg::new("json")
+                     .short('i')
+                     .long("input")
+                     .value_parser(clap::value_parser!(PathBuf))
+                     .required(true)
+                     .num_args(1)
+                     .help("Specify an input of a json path"))
+                .arg(Arg::new("xml")
+                     .short('o')
+                     .long("output")
+                     .value_parser(clap::value_parser!(PathBuf))
+                     .required(true)
+                     .num_args(1)
+                     .help("Specify an output of a directory to generate .xml file"))
+                .arg(Arg::new("root")
+                     .short('r')
+                     .long("root")
+                     .value_parser(clap::value_parser!(PathBuf))
+                     .required(false)
+                     .num_args(1)
+                     .help("Specify a root to trim out an excess path"))
         )
 }
