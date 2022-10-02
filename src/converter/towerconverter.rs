@@ -4,6 +4,8 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+use crate::converter::write_file_xml;
+
 use super::{Converter, get_file};
 
 pub struct TowerConverter {
@@ -19,13 +21,21 @@ impl TowerConverter {
 
 impl Converter for TowerConverter {
     fn start(&self) -> anyhow::Result<()> {
-        unimplemented!("It's not yet implemented, further updates will come soon");
-        // let content = get_file(&self.input_path)?;
-        // // println!("{content}");
-        // let tower = quick_xml::de::from_str::<Tower>(&content)?;
-        // println!("{:?}", tower);
-        // todo!("Add a .tower converter");
-        // Ok(())
+        // unimplemented!("It's not yet implemented, further updates will come soon");
+        let content = get_file(&self.input_path)?;
+        // println!("{content}");
+        let tower = quick_xml::de::from_str::<Tower>(&content)?;
+        println!("{:?}", tower);
+        let output_path = self.output_path.clone();
+        if !output_path.exists() {
+            std::fs::create_dir(&output_path)?;
+        }
+        for (i, level) in tower.levels.level.iter().enumerate() {
+            let output_path = output_path.join(format!("{}.oel", i));
+            write_file_xml(&output_path, level.clone())?;
+        }
+
+        Ok(())
     }
 }
 
@@ -52,7 +62,7 @@ pub struct Tower {
     #[serde(rename = "darkOpacity")]
     dark_opacity: f32,
     cold: String, 
-    levels: Vec<Level>
+    levels: Levels
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -75,52 +85,52 @@ pub enum Variants {
 
 // Because of how .tower structure their data, we need to separate
 // the level and their data
-// #[derive(Deserialize, Serialize, Debug)]
-// pub struct Level {
-//     #[serde(rename = "$value")]
-//     level: LevelData
-// }
-
 #[derive(Deserialize, Serialize, Debug)]
+pub struct Levels {
+    level: Vec<Level>
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename = "level")]
 pub struct Level {
     ffa: Option<i32>,
     teams: Option<String>,
-    level_element: LevelElement
+    #[serde(rename = "$unflatten=LoadSeed")]
+    load_seed: i32,
+    #[serde(rename = "$unflatten=Solids")]
+    solids: Option<String>,
+    #[serde(rename = "$unflatten=BG")]
+    bg: Option<String>,
+    #[serde(rename = "Entities")]
+    entities: Option<Entities>,
+    #[serde(rename = "$unflatten=BGTiles")]
+    bg_tiles: Option<String>
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub enum LevelElement {
-    LoadSeed(i32),
-    Solids(Option<String>),
-    BG(Option<String>),
-    Entities(Option<Vec<Entities>>),
-    BGTiles(Option<String>)
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Entities {
+    #[serde(rename = "$value")]
+    entities: Vec<EntityData>,
 }
 
-// #[derive(Deserialize, Serialize, Debug)]
-// pub struct LevelElement {
-//     #[serde(rename = "LoadSeed")]
-//     load_seed: Option<i32>,
-//     #[serde(rename = "Solids")]
-//     solids: Option<String>,
-//     #[serde(rename = "BG")]
-//     bg: Option<String>,
-//     // #[serde(rename = "Entities")]
-//     // entities: Option<Vec<Entities>>,
-//     #[serde(rename = "BGTiles")]
-//     bg_tiles: Option<String>
-// }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub enum Entities {
-    TreasureChest { x: f32, y: f32 },
-    Spawner { x: f32, y: f32 },
-    PlayerSpawn { x: f32, y: f32 },
-    BGLantern { x: f32, y: f32 },
-    ExplodingOrb { x: f32, y: f32 },
-    OrbEd { x: f32, y: f32 },
-    ProximityBlock { x: f32, y: f32 },
-    MoonGlassBlock { x: f32, y: f32, width: f32, height: f32 },
-    EndlessPortal { x: f32, y: f32 }
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub enum EntityData {
+    TreasureChest { x: f32, y: f32, id: Option<u32> },
+    Spawner { x: f32, y: f32 , id: Option<u32>},
+    PlayerSpawn { x: f32, y: f32, id: Option<u32>},
+    BGLantern { x: f32, y: f32, id: Option<u32>},
+    ExplodingOrb { x: f32, y: f32, id: Option<u32>},
+    OrbEd { x: f32, y: f32, id: Option<u32>},
+    ProximityBlock { x: f32, y: f32, id: Option<u32>},
+    MoonGlassBlock { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    EndlessPortal { x: f32, y: f32, id: Option<u32>},
+    SpikeBallEd { x: f32, y: f32, height: f32, id: Option<u32>},
+    Chain { x: f32, y: f32, height: f32, id: Option<u32>},
+    Ogmo { x: f32, y: f32, id: Option<u32>},
+    YellowStatue { x: f32, y: f32, id: Option<u32>},
+    FakeWall { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    CrackedWall { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    Dummy { x: f32, y: f32, #[serde(rename = "Facing")]facing: String, id: Option<u32>},
 }
