@@ -95,18 +95,40 @@ pub struct Levels {
 pub struct Level {
     ffa: Option<i32>,
     teams: Option<String>,
-    #[serde(rename = "$unflatten=LoadSeed")]
+    #[serde(rename = "LoadSeed")]
     load_seed: i32,
-    #[serde(rename = "$unflatten=Solids")]
-    solids: Option<String>,
-    #[serde(rename = "$unflatten=BG")]
-    bg: Option<String>,
+    #[serde(rename = "Solids")]
+    solids: Option<BitString>,
+    #[serde(rename = "BG")]
+    bg: Option<BitString>,
+    #[serde(rename = "SolidTiles", default = "default_tiles")]
+    solid_tiles: Option<BitString>,
     #[serde(rename = "Entities")]
     entities: Option<Entities>,
-    #[serde(rename = "$unflatten=BGTiles")]
-    bg_tiles: Option<String>
+    #[serde(rename = "BGTiles", default = "default_tiles")]
+    bg_tiles: Option<BitString>
 }
 
+fn default_tiles() -> Option<BitString> {
+    Some(BitString {
+        export_mode: "TrimmedCSV".into(),
+        tileset: None,
+        value: None
+    })
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct BitString {
+    tileset: Option<String>,
+    #[serde(rename = "exportMode", default = "bits")]
+    export_mode: String,
+    #[serde(rename = "$value")]
+    value: Option<String>
+}
+
+fn bits() -> String {
+    String::from("Bitstring")
+}
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Entities {
@@ -116,21 +138,79 @@ pub struct Entities {
 
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
+#[rustfmt::skip]
 pub enum EntityData {
-    TreasureChest { x: f32, y: f32, id: Option<u32> },
-    Spawner { x: f32, y: f32 , id: Option<u32>},
+    BigTreasureChest { x: f32, y: f32, id: Option<u32> },
     PlayerSpawn { x: f32, y: f32, id: Option<u32>},
-    BGLantern { x: f32, y: f32, id: Option<u32>},
+    TeamSpawn { x: f32, y: f32, id: Option<u32>},
     ExplodingOrb { x: f32, y: f32, id: Option<u32>},
     OrbEd { x: f32, y: f32, id: Option<u32>},
+    CrumbleWall { x: f32, y: f32, id: Option<u32>},
+    BGSkeleton { x: f32, y: f32, id: Option<u32>},
     ProximityBlock { x: f32, y: f32, id: Option<u32>},
-    MoonGlassBlock { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    Lantern { x: f32, y: f32, id: Option<u32>},
+    PirateBanner { x: f32, y: f32, id: Option<u32>},
+    WaterDrop { x: f32, y: f32, id: Option<u32>},
+    MushroomEd { x: f32, y: f32, id: Option<u32>},
     EndlessPortal { x: f32, y: f32, id: Option<u32>},
+    CrackedWall { x: f32, y: f32, id: Option<u32>},
     SpikeBallEd { x: f32, y: f32, height: f32, id: Option<u32>},
+    ExplodingSpikeBallEd { x: f32, y: f32, height: f32, id: Option<u32>},
     Chain { x: f32, y: f32, height: f32, id: Option<u32>},
     Ogmo { x: f32, y: f32, id: Option<u32>},
+    Icicle { x: f32, y: f32, id: Option<u32>},
     YellowStatue { x: f32, y: f32, id: Option<u32>},
+    JumpPad { x: f32, y: f32, width: f32, id: Option<u32> },
+    SensorBlock { x: f32, y: f32, width: f32, id: Option<u32> },
+    Mud { x: f32, y: f32, width: f32, id: Option<u32> },
+    SnowEd { x: f32, y: f32, width: f32, id: Option<u32> },
+    HotCoals { x: f32, y: f32, width: f32, id: Option<u32> },
+    CrackedPlatform { x: f32, y: f32, width: f32, id: Option<u32> },
+    Ice { x: f32, y: f32, width: f32, id: Option<u32> },
+    ChalicePad { x: f32, y: f32, width: f32, id: Option<u32> },
+    GhostPlatform { x: f32, y: f32, width: f32, id: Option<u32> },
     FakeWall { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
-    CrackedWall { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    GraniteBlock { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    CrumbleBlock { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    RedSwitchBlock { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    BlueSwitchBlock { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    MoonGlassBlock { x: f32, y: f32, width: f32, height: f32, id: Option<u32>},
+    MovingPlatform { x: f32, y: f32, 
+        width: f32, height: f32, id: Option<u32>, 
+        #[serde(rename = "$value")] node: Option<Vec<Node>>
+    },
+    PrismBlock { x: f32, y: f32, 
+        width: f32, height: f32, id: Option<u32>, 
+        #[serde(rename = "$value")] node: Option<Vec<Node>>
+    },
+    ShiftBlock { x: f32, y: f32, 
+        width: f32, height: f32, id: Option<u32>, 
+        #[serde(rename = "$value")] node: Option<Vec<Node>>
+    },
     Dummy { x: f32, y: f32, #[serde(rename = "Facing")]facing: String, id: Option<u32>},
+    BGLantern { x: f32, y: f32, id: Option<u32>,
+        #[serde(rename = "Lit")] lit: Option<String>
+    },
+    RotatePlatformsCenter { 
+        x: f32, y: f32, 
+        #[serde(rename = "Amount")] amount: i32,
+        #[serde(rename = "Width")] width: i32,
+        #[serde(rename = "DegSpeed")] deg_speed: f32
+    },
+    BossMarker { x: f32, y: f32, id: Option<u32>, 
+        #[serde(rename = "$value")] node: Option<Vec<Node>>
+    },
+    Spawner { x: f32, y: f32 , id: Option<u32>, 
+        #[serde(rename = "$value")] node: Option<Vec<Node>>
+    },
+    BossMarkerB { x: f32, y: f32, id: Option<u32> },
+    TreasureChest { x: f32, y: f32, id: Option<u32>,
+        #[serde(rename = "Mode")] mode: Option<String>,
+        #[serde(rename = "Treasure")] treasure: Option<String>,
+        #[serde(rename = "Type")] r_type: Option<String>,
+        #[serde(rename = "Timer")] timer: Option<f32>
+    },
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Node { x: f32, y: f32 }
