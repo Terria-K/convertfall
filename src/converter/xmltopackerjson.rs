@@ -16,7 +16,7 @@ impl XmlToPackerJson {
 }
 
 impl Converter for XmlToPackerJson {
-    fn start(&self) -> anyhow::Result<()> {
+    fn start(&self) -> anyhow::Result<&str> {
         let content = get_file(&self.input_path)?;
         let xml = quick_xml::de::from_str::<TextureAtlas>(&content)?;
         let frames = xml.sub_textures.iter()
@@ -44,6 +44,6 @@ impl Converter for XmlToPackerJson {
             .collect::<Vec<TextureFrame>>();
         let texture_frame = Frames { frames };
         write_file_json(&self.output_path, texture_frame)?;
-        Ok(())
+        Ok("Successful conversion from .xml to .json")
     }
 }

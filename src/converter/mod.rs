@@ -8,7 +8,7 @@ pub mod packerjsontoxml;
 pub mod xmltopackerjson;
 
 pub trait Converter {
-    fn start(&self) -> anyhow::Result<()>;
+    fn start(&self) -> anyhow::Result<&str>;
 }
 
 pub fn get_file(path: &PathBuf) -> anyhow::Result<String> {

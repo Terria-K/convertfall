@@ -21,7 +21,7 @@ impl PackerJsonToXML {
 }
 
 impl Converter for PackerJsonToXML {
-    fn start(&self) -> anyhow::Result<()> {
+    fn start(&self) -> anyhow::Result<&str> {
         let content = get_file(&self.input_path)?;
         let json = serde_json::from_str::<Frames>(&content)?;
         let sub_textures = json.frames.iter()
@@ -53,6 +53,6 @@ impl Converter for PackerJsonToXML {
             sub_textures
         };
         write_file_xml(&self.output_path, texture_atlas)?;
-        Ok(())
+        Ok("Successful conversion from .json to .xml")
     }
 }

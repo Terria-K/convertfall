@@ -13,6 +13,7 @@ serde_json = "1.0"
 clap = { version = "4.0.2", features = ["derive"] }
 anyhow = "1.0.65"
 thiserror = "1.0.37"
+rand = "0.8.5"
 
 [workspace]
 member = [

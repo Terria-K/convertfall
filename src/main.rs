@@ -17,9 +17,15 @@ fn main() -> anyhow::Result<()> {
     let matches = cli().get_matches();
     match matches.subcommand() {
         Some(("workshop", sub_matches)) => {
-            let path = get_path("tower", sub_matches)?;
+            let path = get_path("input", sub_matches)?;
             let output_path = get_path("output", sub_matches)?;
-            convert(TowerConverter::new(path, output_path))?;
+            let output_type = 
+                if let Some(output_type) = sub_matches.get_one::<String>("type") {
+                    output_type.to_owned()
+                } else {
+                    Err(CommandError::CommandNotFound)?
+                };
+            convert(TowerConverter::new(path, output_path, output_type))?;
         }
         Some(("texture-xml-json", sub_matches)) => {
             let path = get_path("xml", sub_matches)?;
@@ -41,7 +47,9 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn convert<T: Converter>(converter: T) -> anyhow::Result<()> {
-    converter.start()
+    let message = converter.start()?;
+    println!("{message}");
+    Ok(())
 }
 
 fn get_path_or_none(id: &str, matches: &ArgMatches) 
@@ -66,10 +74,10 @@ fn cli() -> Command {
         .subcommand(
             Command::new("workshop")
                 .about("Specify a .tower path and an output directory path.")
-                .arg(Arg::new("tower")
-                     .short('t')
+                .arg(Arg::new("input")
+                     .short('i')
                      .value_parser(clap::value_parser!(PathBuf))
-                     .long("tower")
+                     .long("input")
                      .required(true)
                      .num_args(1)
                      .help("Specify an input of a .tower path"))
@@ -80,6 +88,14 @@ fn cli() -> Command {
                      .required(true)
                      .num_args(1)
                      .help("Specify an output to a directory to generate .oel(s) file"))
+                .arg(Arg::new("type")
+                    .short('t')
+                    .value_parser(clap::value_parser!(String))
+                    .long("type")
+                    .required(false)
+                    .num_args(1)
+                    .default_value("oel")
+                    .help("Specify a type of an output whether it's json or oel"))
         )
         .subcommand(
             Command::new("texture-xml-json")
